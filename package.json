@@ -1,0 +1,40 @@
+{
+  "name": "ynab-tools",
+  "version": "1.0.0",
+  "description": "Tools to convert bank statements into YNAB compatible files.",
+  "main": "main.js",
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "karma": "^0.13.15",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-mocha": "^0.2.1",
+    "karma-phantomjs-launcher": "^0.2.2",
+    "karma-requirejs": "^0.2.2",
+    "mocha": "^2.3.4",
+    "phantomjs": "^1.9.19",
+    "requirejs": "^2.1.22"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/willybarro/ynab-tools.git"
+  },
+  "keywords": [
+    "ynab",
+    "tools",
+    "ferramentas",
+    "itau",
+    "nubank",
+    "converter"
+  ],
+  "author": "Willy Barro",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/willybarro/ynab-tools/issues"
+  },
+  "homepage": "https://github.com/willybarro/ynab-tools#readme"
+}
