@@ -44,9 +44,21 @@ define(function(require) {
     describe('output', function() {
       it('should generate a correct ofx file', function() {
         statement = yt.parse.creditCard.itau(statementStubs.creditCard.itau);
-        console.log(yt.output.ofx(statement));
+        ofxFile = yt.output.ofx(statement);
+
+        // A statement that it should have generated
+        checkString = "<STMTTRN>\n"
+          + "<TRNTYPE>DEBIT\n"
+          + "<DTPOSTED>20151124000000[-03:EST]\n"
+          + "<TRNAMT>-150.55\n"
+          + "<FITID>20151124015\n"
+          + "<NAME>NATIONAL CAR TOLLS\n"
+          + "<CHECKNUM>\n"
+          + "<MEMO>\n"
+          + "</STMTTRN>\n"
+        ;
         
-        //expect(resultingDate).to.equal('20150103090407[-03:EST]');
+        expect(ofxFile).string(checkString);
       })
     })
   });
