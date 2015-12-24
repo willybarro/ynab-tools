@@ -6,29 +6,56 @@ define(function () {
          * @return exporting.statement
          */
         itau: function(stringStatement) {
+          // TODO - Find a better way to detect statement year from the pasted statement
+          var statementYear = new Date().getFullYear();
+
+          // Build statement Lines
+          var startDate = null
+          , endDate = null
+          , statementLines = []
+          , transactionRegex = /(\d+\/\d+)\t(.*?)\t([-+]?[\d,.]+)/g
+          , match = null
+          ;
+
+          while ((match = transactionRegex.exec(stringStatement)) !== null) {
+            var date = match[1].split("/");
+            var dateObject = new Date(statementYear, date[1]-1, date[0]);
+
+            // Will be useful for metadata
+            if (startDate == null || dateObject < startDate) {
+              startDate = dateObject;
+            }
+            if (endDate == null || dateObject > endDate) {
+              endDate = dateObject;
+            }
+
+            // Payee, category and memo variables
+            var payee = match[2];
+            var category = "";
+            var memo = "";
+
+            /**
+             * Change amount to american format
+             *
+             * Also multiplies Itau amount * - 1. Because they mark negative (debit)
+             * operations on credit cards as "credit" which doesn't make sense.
+             */
+            var amount = parseFloat(match[3].replace('.', '').replace(',', '.'));
+            amount = amount * - 1;
+
+            // Create transaction and push to transaction array
+            ln = new yt.exporting.transaction(dateObject, payee, category, memo, amount);
+            statementLines.push(ln);
+          }
+
           // Build metadata from the statement - @TODO Add here
           // @TODO Add details about which credit card, which account, etc.
           //  We could use that info to generate the filename.
           var metadata = new yt.exporting.metadata();
 
-          // Build statement Lines
-          var statementLines = [];
-
-          var lineRegex = /(\d+\/\d+)\t(.*?)\t([-+]?[\d,.]+)/g;
-          var match = null;
-          while ( (match = lineRegex.exec(stringStatement)) !== null) {
-            var date = match[1];
-            var payee = match[2];
-            var category = "";
-            var memo = "";
-
-            // Change amount to american format
-            var amount = match[3].replace('.', '').replace(',', '.');
-
-            // Create line and push to line array
-            ln = new yt.exporting.line(date, payee, category, memo, amount);
-            statementLines.push(ln);
-          }
+          metadata.currentDate = new Date();
+          metadata.startDate = startDate;
+          metadata.endDate = endDate;
 
           // Build the statement object and return
           return new yt.exporting.statement(metadata, statementLines);
@@ -51,35 +78,47 @@ define(function () {
           bankId: '9999',
           accountId: '999999',
           accountType: 'CHECKING',
-          currentDate: '20151224100000[-03:EST]'
+          currentDate: null,
+          startDate: null,
+          endDate: null
         }
       },
-      statement: function(metadata, lines) {
-        // @TODO If we're going to add some automatic categorization or something like that, do it here!
+      statement: function(metadata, transactions) {
+        // @TODO If we're going to add any automatic categorization or something like that, do it here!
 
         return {
           'metadata': metadata,
-          'lines': lines
+          'transactions': transactions
         };
       },
-      line: function(date, payee, category, memo, amount) {
-        var lineObject = {
+      transaction: function(date, payee, category, memo, amount) {
+        var transactionObject = {
           'date': date,
           'payee': payee,
           'category': category,
           'memo': memo,
-          'outflow' : 0,
-          'inflow': 0
+          'amount' : parseFloat(amount),
+          'transactionType': 'DEBIT',
+        };
+
+        if (amount > 0) {
+          transactionObject.transactionType = 'CREDIT';
         }
 
-        amount = parseFloat(amount);
-
-        lineObject.outflow = amount;
-        if(amount < 0) {
-          lineObject.inflow = amount;
-        }
-
-        return lineObject;
+        return transactionObject;
+      }
+    },
+    util: {
+      ofxDateFormat: function(dt) {
+        var returnDate = ""
+        + '' + dt.getFullYear()
+        + '' + String("00" + (dt.getMonth() + 1)).slice(-2) // Slice is for padding - adding 0 to the left :)
+        + '' + String("00" + dt.getDate()).slice(-2)
+        + '' + String("00" + dt.getHours()).slice(-2)
+        + '' + String("00" + dt.getMinutes()).slice(-2)
+        + '' + String("00" + dt.getSeconds()).slice(-2)
+        + '' + '[-03:EST]';
+        return returnDate;
       }
     },
     output: {
@@ -89,7 +128,7 @@ define(function () {
        */
       ofx: function(statement) {
         var metadata = statement.metadata;
-        var lines = statement.lines;
+        var transactions = statement.transactions;
 
         var ofxOutput = "";
 
@@ -108,65 +147,69 @@ define(function () {
 
         // OFX Content Header
         ofxOutput += ""
-          + "<OFX>"
-          + "<SIGNONMSGSRSV1>"
-          + "<SONRS>"
-          + "<STATUS>"
-          + "<CODE>0"
-          + "<SEVERITY>INFO"
-          + "</STATUS>"
-          + "<DTSERVER>" + metadata.currentDate
-          + "<LANGUAGE>" + metadata.language
-          + "</SONRS>"
-          + "</SIGNONMSGSRSV1>"
-          + "<BANKMSGSRSV1>"
-          + "<STMTTRNRS>"
-          + "<TRNUID>1001"
-          + "<STATUS>"
-          + "<CODE>0"
-          + "<SEVERITY>INFO"
-          + "</STATUS>"
-          + "<STMTRS>"
-          + "<CURDEF>" + metadata.currency
-          + "<BANKACCTFROM>"
-          + "<BANKID>" + metadata.bankId
-          + "<ACCTID>" + metadata.accountId
-          + "<ACCTTYPE>" + metadata.accountType
-          + "</BANKACCTFROM>"
+          + "<OFX>\n"
+          + "<SIGNONMSGSRSV1>\n"
+          + "<SONRS>\n"
+          + "<STATUS>\n"
+          + "<CODE>0\n"
+          + "<SEVERITY>INFO\n"
+          + "</STATUS>\n"
+          + "<DTSERVER>" + metadata.currentDate + "\n"
+          + "<LANGUAGE>" + metadata.language + "\n"
+          + "</SONRS>\n"
+          + "</SIGNONMSGSRSV1>\n"
+          + "<BANKMSGSRSV1>\n"
+          + "<STMTTRNRS>\n"
+          + "<TRNUID>1001\n"
+          + "<STATUS>\n"
+          + "<CODE>0\n"
+          + "<SEVERITY>INFO\n"
+          + "</STATUS>\n"
+          + "<STMTRS>\n"
+          + "<CURDEF>" + metadata.currency + "\n"
+          + "<BANKACCTFROM>\n"
+          + "<BANKID>" + metadata.bankId + "\n"
+          + "<ACCTID>" + metadata.accountId + "\n"
+          + "<ACCTTYPE>" + metadata.accountType + "\n"
+          + "</BANKACCTFROM>\n"
         ;
 
         // OFX Statements - Transaction List
         ofxOutput += ""
-          + "<BANKTRANLIST>"
-          + "<DTSTART>20151201100000[-03:EST]"
-          + "<DTEND>20151224100000[-03:EST]"
+          + "<BANKTRANLIST>\n"
+          + "<DTSTART>" + yt.util.ofxDateFormat(metadata.startDate) + "\n"
+          + "<DTEND>" + yt.util.ofxDateFormat(metadata.endDate) + "\n"
         ;
 
-        for (var i = 0; i < lines.length; i++) {
-          var line = lines[i];
-          var transactionType = "DEBIT";
-          ofxOutput += "";
-            + "<STMTTRN>"
-            + "<TRNTYPE>" + transactionType
-            + "<DTPOSTED>20151201100000[-03:EST]"
-            + "<TRNAMT>" + line.amount
-            + "<FITID>20151201001"
-            + "<CHECKNUM>20151201001"
-            + "<MEMO>" + line.memo
-            + "</STMTTRN>"
+        for (var i = 0; i < transactions.length; i++) {
+          var transaction = transactions[i];
+          var transactionId = yt.util.ofxDateFormat(transaction.date).slice(0, 8) + String("000" + (i+1)).slice(-3);
+
+          // Output format
+          ofxOutput += ""
+            + "<STMTTRN>\n"
+            + "<TRNTYPE>" + transaction.transactionType + "\n"
+            + "<DTPOSTED>" + yt.util.ofxDateFormat(transaction.date) + "\n"
+            + "<TRNAMT>" + transaction.amount + "\n"
+            + "<FITID>" + transactionId + "\n"
+            + "<NAME>" + transaction.payee + "\n"
+            + "<CHECKNUM>" + "\n"
+            + "<MEMO>" + transaction.memo + "\n"
+            + "</STMTTRN>\n"
+          ;
         }
 
-        ofxOutput += "</BANKTRANLIST>";
+        ofxOutput += "</BANKTRANLIST>\n";
 
         // OFX closing
         ofxOutput += ""
-          + "<LEDGERBAL>"
-          + "<BALAMT>0"
-          + "<DTASOF>20151224100000[-03:EST]"
-          + "</LEDGERBAL>"
-          + "</STMTRS>"
-          + "</STMTTRNRS>"
-          + "</BANKMSGSRSV1>"
+          + "<LEDGERBAL>\n"
+          + "<BALAMT>0\n"
+          + "<DTASOF>" + yt.util.ofxDateFormat(metadata.currentDate) + "\n"
+          + "</LEDGERBAL>\n"
+          + "</STMTRS>\n"
+          + "</STMTTRNRS>\n"
+          + "</BANKMSGSRSV1>\n"
           + "</OFX>"
         ;
 
