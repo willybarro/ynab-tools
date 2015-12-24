@@ -25,6 +25,8 @@ define(function(require) {
     describe('itau statement parsing', function() {
       it('should correctly parse', function() {
         statement = yt.parse.creditCard.itau(statementStubs.creditCard.itau);
+
+        console.log(statement.lines[3]);
       })
     })
   });
