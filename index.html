@@ -1,11 +1,101 @@
 <!doctype html>
 <html>
 <head>
-	<title></title>
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.22/require.min.js"></script>
-	<script type="text/javascript" src="js/app.js"></script>
+    <title>YNAB Tools</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.22/require.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="js/app.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <link href="css/ynab-tools.css" rel="stylesheet">
 </head>
 <body>
-teste
+
+    <div class="container">
+        <div class="header clearfix">
+            <h3 class="text-muted">YNAB Tools</h3>
+        </div>
+
+        <div>
+            <p>Escolha o tipo de fatura/extrato que você quer converter para .OFX</p>
+            <ul id="tab-opcoes" class="nav nav-tabs">
+                <li class="active" data-option="itau-cartao"><a href="#itau_fatura_tab" data-toggle="tab">Cartão</a></li>
+                <li class="hidden" data-option="itau-poupanca"><a href="#itau_poupanca_tab" data-toggle="tab">Poupança</a></li>
+                <li class="hidden" data-option="nubank-cartao"><a href="#nubank_fatura_tab" data-toggle="tab">Cartão</a></li>
+            </ul>
+            <div class="jumbotron tab-content">
+                <div id="itau_fatura_tab" class="tab-pane active">
+                    <div class="form-group">
+                        <textarea id="statement-textarea" class="form-control" placeholder="Cole sua fatura do cartão Itaú aqui"></textarea>
+                    </div>
+                </div>
+                <div class="clearfix">
+                    <div class="pull-left">
+                        <div id="alert-error" class="alert alert-danger hidden" role="alert">
+                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                              <span class="sr-only">Erro:</span>
+                              <span class="message"></span>
+                        </div>
+                        <div id="alert-success" class="alert alert-success hidden" role="alert">
+                            <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
+                            <span class="message"></span>
+                        </div>
+                    </div>
+                    <div class="pull-right">
+                        <a id="btn-convert" class="btn btn-lg btn-primary disabled" role="button">
+                            <i class="glyphicon glyphicon-play"></i>
+                            Converter
+                        </a>
+                        <a id="btn-download" class="btn btn-lg btn-success disabled" role="button">
+                            <i class="glyphicon glyphicon-download"></i>
+                            Baixar .OFX
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="jumbotron">
+                <h2>Como usar?</h2>
+                <p>
+                    <ol>
+                        <li>Abra a página da sua fatura;</li>
+                        <li>Copie toda a página com <b>CTRL + A</b> depois <b>CTRL + C</b>;</li>
+                        <li>Selecione o tipo de fatura que você quer converter;</li>
+                        <li>Cole sua fatura no campo acima usando <b>CTRL + V</b>;</li>
+                        <li>Clique no botão <b>Converter</b>;</li>
+                        <li>Se tudo der certo, clique no botão <b>Baixar .OFX</b>;</li>
+                        <li>Pronto :)</li>
+                    </ol>
+                </p>
+
+                <h2>O que é?</h2>
+                <p>Converte seus extratos para um formato que o YNAB consegue ler (.OFX).</p>
+
+                <h2>Por quê?</h2>
+                <p>Porque o Itaú não exporta nem o extrato do Cartão de Crédito, nem o da Poupança para .OFX, e o Nubank não exporta o extrato do Cartão de Crédito.</p>
+                <p>Sendo assim, é muito difícil fazer a conciliação dos valores com um sotware de gestão financeira, pois toda transação tem que ser inserida manualmente uma a uma.</p>
+
+                <h2>É seguro?</h2>
+                <p>Sim, pois essa ferramenta foi desenvolvida 100% com Javascript rodando no cliente.</p>
+                <p>Isso significa que o código que transforma sua fatura em um arquivo .OFX, é executado completamente no seu próprio computador, ou seja, os dados da sua fatura nunca irão parar em algum servidor externo.</p>
+                <p>Além disso, esse projeto é de <a href="https://github.com/willybarro/ynab-tools">código aberto</a>. Qualquer um, inclusive você, pode verificar e validar se existe algum código malicioso no projeto e até colaborar com o desenvolvimento se quiser.</p>
+
+                <h2>Só funciona no YNAB?</h2>
+                <p>Não, como o arquivo gerado é um .OFX, você pode utilizá-lo em qualquer programa que trabalha esse tipo de arquivo, como o Microsoft Money ou o MoneyDance.</p>
+
+                <h2>O que vem por aí?</h2>
+                <p>Suporte a extrato de poupança e faturas do Nubank.</p>
+            </div>
+
+            <footer class="footer">
+                <p>Desenvolvido com muito ♥ por <a href="http://github.com/willybarro">willybarro</a>. Licença do código: <a href="https://github.com/willybarro/ynab-tools/blob/master/LICENSE">MIT</a></p>
+            </footer>
+
+        </div>
+    </div> <!-- /container -->
+
 </body>
 </html>
