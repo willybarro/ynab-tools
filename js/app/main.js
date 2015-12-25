@@ -76,10 +76,12 @@ define(['app/ynab-tools'], function (yt) {
 				var statementString = main.getStatementString();
 				var option = main.getSelectedConversionOption();
 				var statement = null;
+				var filename = 'extrato.ofx';
 
 				switch(option) {
 					case 'itau-cartao':
 						statement = yt.parse.creditCard.itau(statementString);
+						filename = 'extrato-' + option + '-' + yt.util.isoDateFormat(statement.metadata.currentDate) + '.ofx';
 					break;
 					case 'itau-poupanca':
 					break;
@@ -93,7 +95,7 @@ define(['app/ynab-tools'], function (yt) {
 					main.flashMessage('Convertido! Clique em <b>Baixar .OFX</b>');
 
 					// Sets the download link
-					main.setDownload(yt.output.ofx(statement), 'nome-do-arquivo.ofx');
+					main.setDownload(yt.output.ofx(statement), filename);
 
 					main.convertButton.disable();
 					main.downloadButton.enable();

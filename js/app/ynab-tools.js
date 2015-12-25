@@ -119,6 +119,16 @@ define(function () {
         + '' + String("00" + dt.getSeconds()).slice(-2)
         + '' + '[-03:EST]';
         return returnDate;
+      },
+      isoDateFormat: function(dt) {
+        var returnDate = ""
+        + '' + dt.getFullYear()
+        + '' + String("00" + (dt.getMonth() + 1)).slice(-2) // Slice is for padding - adding 0 to the left :)
+        + '' + String("00" + dt.getDate()).slice(-2)
+        + 'T' + String("00" + dt.getHours()).slice(-2)
+        + '' + String("00" + dt.getMinutes()).slice(-2)
+        + '' + String("00" + dt.getSeconds()).slice(-2);
+        return returnDate;
       }
     },
     output: {
