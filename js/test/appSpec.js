@@ -26,12 +26,25 @@ define(function(require) {
         statement = yt.parse.creditCard.itau(statementStubs.creditCard.itau);
         var transaction = statement.transactions[3]; // I'm getting a random transaction to check
 
+        expect(statement.transactions.length).to.equal(18);
+
         expect(transaction.payee).to.equal("PAO DE ACUCAR-2337-DEL");
         expect(transaction.amount).to.equal(-521.36);
         expect(transaction.date.getMonth()).to.equal(10); // 10 is november
 
-        // I can't enable the test below until we find a better way to detect year for Itaú
-        // expect(transaction.date.getFullYear()).to.equal(2015);
+        // TODO add assertion to start-date/end-date
+      })
+    });
+    describe('nubank statement parsing', function() {
+      it('should correctly generate one transaction', function() {
+        statement = yt.parse.creditCard.nubank(statementStubs.creditCard.nubank);
+        var transaction = statement.transactions[13]; // I'm getting a random transaction to check
+
+        expect(statement.transactions.length).to.equal(31);
+
+        expect(transaction.payee).to.equal("Google Google Storage");
+        expect(transaction.amount).to.equal(-7.74);
+        expect(transaction.date.getMonth()).to.equal(9); // 9 is october
       })
     });
     describe('utils', function() {

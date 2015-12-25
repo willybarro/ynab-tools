@@ -60,7 +60,62 @@ define(function () {
           // Build the statement object and return
           return new yt.exporting.statement(metadata, statementLines);
         },
-        nubank: function() {
+        nubank: function(stringStatement) {
+          // TODO - Find a better way to detect statement year from the pasted statement
+          // Nubank has the same problem as Itaú :/
+          var statementYear = new Date().getFullYear();
+
+          // Build statement Lines
+          var startDate = null
+          , endDate = null
+          , statementLines = []
+          , transactionRegex = /([0-9]+\s[A-Z]{3})\n(.*?)\t([+-]?[\d,.]+)/g
+          , match = null
+          ;
+
+          while ((match = transactionRegex.exec(stringStatement)) !== null) {
+            var date = match[1].split(" ");
+            var dateObject = new Date(statementYear, yt.util.brMonthToJsIndex[date[1]], date[0]);
+
+            // Will be useful for metadata
+            if (startDate == null || dateObject < startDate) {
+              startDate = dateObject;
+            }
+            if (endDate == null || dateObject > endDate) {
+              endDate = dateObject;
+            }
+
+            // Payee, category and memo variables
+            var payee = match[2];
+            var category = "";
+            var memo = "";
+
+            /**
+             * Change amount to american format
+             *
+             * Also multiplies Nubank amount * - 1. Because they don't sign outflows as
+             * negative numbers
+             */
+            var amount = parseFloat(match[3].replace('.', '').replace(',', '.'));
+            amount = amount * - 1;
+
+            // Create transaction and push to transaction array
+            ln = new yt.exporting.transaction(dateObject, payee, category, memo, amount);
+            statementLines.push(ln);
+          }
+          console.log(startDate, endDate);
+
+          // Build metadata from the statement - @TODO Add here
+          // @TODO Add details about which credit card, which account, etc.
+          //  We could use that info to generate the filename.
+          var metadata = new yt.exporting.metadata();
+
+          metadata.currentDate = new Date();
+          metadata.startDate = startDate;
+          metadata.endDate = endDate;
+
+          // Build the statement object and return
+          return new yt.exporting.statement(metadata, statementLines);
 
         }
       },
@@ -109,6 +164,11 @@ define(function () {
       }
     },
     util: {
+      brMonthToJsIndex: {
+        'JAN': 0, 'FEV': 1, 'MAR': 2, 'ABR': 3, 'MAI': 4,
+        'JUN': 5, 'JUL': 6, 'AGO': 7, 'SET': 8, 'OUT': 9,
+        'NOV': 10, 'DEZ': 11
+      },
       ofxDateFormat: function(dt) {
         var returnDate = ""
         + '' + dt.getFullYear()
