@@ -16,7 +16,7 @@ define(['app/ynab-tools'], function (yt) {
 			clearTimeout(main.flashMessageTimeout);
 			main.flashMessageTimeout = window.setTimeout(function() {
 				$('.alert').fadeOut('fast');
-			}, 5000);
+			}, 4000);
 		},
 		hideFlashMessage: function() {
 			$('.alert').hide();
