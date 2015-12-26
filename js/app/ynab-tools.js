@@ -69,7 +69,7 @@ define(function () {
           var startDate = null
           , endDate = null
           , statementLines = []
-          , transactionRegex = /([0-9]+\s[A-Z]{3})\n(.*?)\t([+-]?[\d,.]+)/g
+          , transactionRegex = /([0-9]+\s[A-Z]{3})\r?\n(.*?)\t([+-]?[\d,.]+)/g
           , match = null
           ;
 
@@ -116,11 +116,13 @@ define(function () {
 
           // Build the statement object and return
           return new yt.exporting.statement(metadata, statementLines);
-
         }
       },
       savings: {
         itau: function() {
+          var regex = /([0-9]+)[\t ]+(.*?)\t+([0-9,.-]+)/g;
+
+          // exclude those that start contains "SALDO"
 
         }
       },

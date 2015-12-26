@@ -61,6 +61,8 @@ define(['app/ynab-tools'], function (yt) {
 		},
 		lastStatement: '',
 		init: function() {
+			$('#statement-textarea').trigger('focus');
+
 			$('#statement-textarea').on('blur paste keyup', function() {
 				var statementString = main.getStatementString();
 
@@ -77,6 +79,7 @@ define(['app/ynab-tools'], function (yt) {
 
 			$('#tab-opcoes li').bind('click', function() {
 				$('#statement-textarea').val('');
+				$('#statement-textarea').trigger('focus');
 
 				main.resetFormButtonsState();
 			});
