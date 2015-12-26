@@ -54,15 +54,18 @@ define(['app/ynab-tools'], function (yt) {
 		getStatementString: function() {
 			return $.trim($('#statement-textarea').val());
 		},
+		resetFormButtonsState: function() {
+			main.hideFlashMessage();
+			main.downloadButton.disable();
+			main.convertButton.disable();
+		},
 		lastStatement: '',
 		init: function() {
 			$('#statement-textarea').on('blur paste keyup', function() {
 				var statementString = main.getStatementString();
 
 				if (statementString != main.lastStatement) {
-					main.hideFlashMessage();
-					main.downloadButton.disable();
-					main.convertButton.disable();
+					main.resetFormButtonsState();
 
 					if(statementString != '') {
 						main.convertButton.enable();
@@ -70,6 +73,12 @@ define(['app/ynab-tools'], function (yt) {
 				}
 
 				main.lastStatement = statementString;
+			});
+
+			$('#tab-opcoes li').bind('click', function() {
+				$('#statement-textarea').val('');
+
+				main.resetFormButtonsState();
 			});
 
 			$('#btn-convert').bind('click', function() {
