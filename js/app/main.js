@@ -81,13 +81,16 @@ define(['app/ynab-tools'], function (yt) {
 				switch(option) {
 					case 'itau-cartao':
 						statement = yt.parse.creditCard.itau(statementString);
-						filename = 'extrato-' + option + '-' + yt.util.isoDateFormat(statement.metadata.currentDate) + '.ofx';
 					break;
 					case 'itau-poupanca':
 					break;
 					case 'nubank-cartao':
+						statement = yt.parse.creditCard.nubank(statementString);
 					break;
 				}
+
+				// Create filename
+				filename = 'extrato-' + option + '-' + yt.util.isoDateFormat(statement.metadata.currentDate) + '.ofx';
 
 				if (statement == null || statement.transactions.length == 0) {
 					main.flashMessage('Formato de fatura inválido.', true);
